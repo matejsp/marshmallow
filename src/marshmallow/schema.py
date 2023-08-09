@@ -552,6 +552,12 @@ class BaseSchema(base.SchemaABC):
 
         return MarshalResult(result, errors)
 
+    def dump3(self, obj, many=None, update_fields=True, **kwargs):
+        result, errors = self.dump(obj, many, update_fields, **kwargs)
+        if errors:
+            raise ValidationError(message=errors, data=result)
+        return result
+
     def dumps(self, obj, many=None, update_fields=True, *args, **kwargs):
         """Same as :meth:`dump`, except return a JSON-encoded string.
 
@@ -570,6 +576,13 @@ class BaseSchema(base.SchemaABC):
         ret = self.opts.json_module.dumps(deserialized, *args, **kwargs)
         return MarshalResult(ret, errors)
 
+    def dumps3(self, obj, many=None, update_fields=True, *args, **kwargs):
+        deserialized, errors = self.dump(obj, many=many, update_fields=update_fields)
+        ret = self.opts.json_module.dumps(deserialized, *args, **kwargs)
+        if errors:
+            raise ValidationError(message=errors, data=ret)
+        return ret
+
     def load(self, data, many=None, partial=None):
         """Deserialize a data structure to an object defined by this Schema's
         fields and :meth:`make_object`.
@@ -587,6 +600,13 @@ class BaseSchema(base.SchemaABC):
         """
         result, errors = self._do_load(data, many, partial=partial, postprocess=True)
         return UnmarshalResult(data=result, errors=errors)
+
+    def load3(self, data, many=None, partial=None):
+        """Migration to marhsmallow 3"""
+        result, errors = self._do_load(data, many, partial=partial, postprocess=True)
+        if errors:
+            raise ValidationError(message=errors, data=data)
+        return result
 
     def loads(self, json_data, many=None, *args, **kwargs):
         """Same as :meth:`load`, except it takes a JSON string as input.
@@ -609,6 +629,13 @@ class BaseSchema(base.SchemaABC):
 
         data = self.opts.json_module.loads(json_data, *args, **kwargs)
         return self.load(data, many=many, partial=partial)
+
+    def loads3(self, json_data, many=None, *args, **kwargs):
+        """Migration to marhsmallow 3"""
+        partial = kwargs.pop('partial', None)
+
+        data = self.opts.json_module.loads(json_data, *args, **kwargs)
+        return self.load3(data, many=many, partial=partial)
 
     def validate(self, data, many=None, partial=None):
         """Validate `data` against the schema, returning a dictionary of
