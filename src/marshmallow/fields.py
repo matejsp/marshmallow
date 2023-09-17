@@ -123,13 +123,21 @@ class Field(FieldABC):
         'validator_failed': 'Invalid value.'
     }
 
-    def __init__(self, default=missing_, attribute=None, load_from=None, dump_to=None,
+    def __init__(self, default=missing_, attribute=None, load_from=None, dump_to=None, data_key=None,
                  error=None, validate=None, required=False, allow_none=None, load_only=False,
                  dump_only=False, missing=missing_, error_messages=None, **metadata):
         self.default = default
         self.attribute = attribute
-        self.load_from = load_from  # this flag is used by Unmarshaller
-        self.dump_to = dump_to  # this flag is used by Marshaller
+        if data_key is not None:
+            self.load_from = load_from  # this flag is used by Unmarshaller
+            self.dump_to = dump_to  # this flag is used by Marshaller
+        else:
+            # warnings.warn(
+            #     "Do not use load_From and dump_to ... use data_key!",
+            #     ChangedInMarshmallow3Warning
+            # )
+            self.load_from = load_from  # this flag is used by Unmarshaller
+            self.dump_to = dump_to  # this flag is used by Marshaller
         self.validate = validate
         if utils.is_iterable_but_not_string(validate):
             if not utils.is_generator(validate):
@@ -446,7 +454,7 @@ class Nested(Field):
         if not self.__updated_fields:
             schema._update_fields(obj=nested_obj, many=many)
             self.__updated_fields = True
-        ret, errors = schema.dump(nested_obj, many=many,
+        ret, errors = schema._dump(nested_obj, many=many,
                 update_fields=not self.__updated_fields)
         if isinstance(self.only, basestring):  # self.only is a field name
             only_field = self.schema.fields[self.only]
@@ -463,10 +471,7 @@ class Nested(Field):
         if self.many and not utils.is_collection(value):
             self.fail('type', input=value, type=value.__class__.__name__)
 
-        data, errors = self.schema.load(value)
-        if errors:
-            raise ValidationError(errors, data=data)
-        return data
+        return self.schema.load3(value)
 
     def _validate_missing(self, value):
         """Validate missing values. Raise a :exc:`ValidationError` if

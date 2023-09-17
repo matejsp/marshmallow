@@ -43,3 +43,15 @@ class SchemaABC(object):
 
     def loads(self, data):
         raise NotImplementedError
+
+    def dump3(self, obj):
+        raise NotImplementedError
+
+    def dumps3(self, obj, *args, **kwargs):
+        raise NotImplementedError
+
+    def load3(self, data):
+        raise NotImplementedError
+
+    def loads3(self, data):
+        raise NotImplementedError
