@@ -204,13 +204,13 @@ class SchemaOpts(object):
                 "The dateformat option is renamed to datetimeformat in marshmallow 3.",
                 ChangedInMarshmallow3Warning
             )
-        self.dateformat = getattr(meta, 'dateformat', None)
+        self.dateformat = getattr(meta, 'datetimeformat', getattr(meta, 'dateformat', None))
         if hasattr(meta, 'json_module'):
             warnings.warn(
                 "The json_module option is renamed to render_module in marshmallow 3.",
                 ChangedInMarshmallow3Warning
             )
-        self.json_module = getattr(meta, 'json_module', json)
+        self.json_module = getattr(meta, 'render_module', getattr(meta, 'json_module', json))
         if hasattr(meta, 'skip_missing'):
             warnings.warn(
                 'The skip_missing option is no longer necessary. Missing inputs passed to '
@@ -357,6 +357,11 @@ class BaseSchema(base.SchemaABC):
                 RemovedInMarshmallow3Warning
             )
         self.prefix = prefix
+        if strict is not None:
+            warnings.warn(
+                'In marshmallow 3 schemas are strict by default. Do not use strict parameter.',
+                ChangedInMarshmallow3Warning,
+            )
         self.strict = strict if strict is not None else self.opts.strict
         self.ordered = self.opts.ordered
         self.load_only = set(load_only) or set(self.opts.load_only)

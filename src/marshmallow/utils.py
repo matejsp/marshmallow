@@ -8,6 +8,7 @@ import json
 import re
 import time
 import types
+import warnings
 from calendar import timegm
 from decimal import Decimal, ROUND_HALF_EVEN, Context, Inexact
 from email.utils import formatdate, parsedate
@@ -16,7 +17,7 @@ from pprint import pprint as py_pprint
 from marshmallow.compat import OrderedDict, binary_type, text_type
 from marshmallow.compat import get_func_args as compat_get_func_args
 from marshmallow.compat import Mapping, Iterable
-from marshmallow.warnings import unused_and_removed_in_ma3
+from marshmallow.warnings import unused_and_removed_in_ma3, ChangedInMarshmallow3Warning
 
 
 dateutil_available = False
@@ -394,4 +395,9 @@ Handles `functools.partial` objects and callable objects.
 
 
 def if_none(value, default):
+    if value is None:
+        warnings.warn(
+            'Functions pre_load, pre_dump, post_load, post_dump must return a value in marshmallow 3.',
+            ChangedInMarshmallow3Warning,
+        )
     return value if value is not None else default

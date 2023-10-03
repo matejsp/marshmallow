@@ -15,7 +15,7 @@ from marshmallow.utils import missing as missing_
 from marshmallow.compat import text_type, basestring, Mapping
 from marshmallow.exceptions import ValidationError
 from marshmallow.validate import Validator
-from marshmallow.warnings import RemovedInMarshmallow3Warning
+from marshmallow.warnings import RemovedInMarshmallow3Warning, ChangedInMarshmallow3Warning
 
 __all__ = [
     'Field',
@@ -129,13 +129,14 @@ class Field(FieldABC):
         self.default = default
         self.attribute = attribute
         if data_key is not None:
-            self.load_from = load_from  # this flag is used by Unmarshaller
-            self.dump_to = dump_to  # this flag is used by Marshaller
+            self.load_from = data_key  # this flag is used by Unmarshaller
+            self.dump_to = data_key  # this flag is used by Marshaller
         else:
-            # warnings.warn(
-            #     "Do not use load_From and dump_to ... use data_key!",
-            #     ChangedInMarshmallow3Warning
-            # )
+            if dump_to is not None or load_from is not None:
+                warnings.warn(
+                    "Do not use load_From and dump_to ... use data_key!",
+                    ChangedInMarshmallow3Warning
+                )
             self.load_from = load_from  # this flag is used by Unmarshaller
             self.dump_to = dump_to  # this flag is used by Marshaller
         self.validate = validate
