@@ -530,7 +530,7 @@ class BaseSchema(base.SchemaABC):
                 )
             except ValidationError as error:
                 errors = marshal.errors
-                preresult = error.data
+                preresult = error.valid_data
 
             result = self._postprocess(preresult, many, obj=obj)
 
@@ -588,6 +588,11 @@ class BaseSchema(base.SchemaABC):
 
         .. versionadded:: 1.0.0
         """
+        if ENABLE_MARSHMALLOW_WARNINGS3:
+            warnings.warn(
+                "Do not call dumps directly ... use dumps3!",
+                ChangedInMarshmallow3Warning
+            )
         deserialized, errors = self._dump(obj, many=many, update_fields=update_fields)
         ret = self.opts.json_module.dumps(deserialized, *args, **kwargs)
         return MarshalResult(ret, errors)
@@ -723,7 +728,7 @@ class BaseSchema(base.SchemaABC):
                     index_errors=self.opts.index_errors,
                 )
             except ValidationError as error:
-                result = error.data
+                result = error.valid_data
             self._invoke_field_validators(unmarshal, data=result, many=many)
             errors = unmarshal.errors
             field_errors = bool(errors)

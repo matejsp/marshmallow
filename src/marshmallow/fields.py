@@ -583,7 +583,7 @@ class List(Field):
             try:
                 result.append(self.container.deserialize(each))
             except ValidationError as e:
-                result.append(e.data)
+                result.append(e.valid_data)
                 errors.update({idx: e.messages})
 
         if errors:
